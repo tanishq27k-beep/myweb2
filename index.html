@@ -1,0 +1,354 @@
+<style>
+  body{
+    background-color:#3b82f6;
+    margin:0;
+    overflow:hidden;
+    font-family: Arial, sans-serif;
+  }
+  #game{
+    position:relative;
+    width:900px;
+    height:700px;
+    margin:0 auto;
+    overflow:hidden;
+  }
+  #score{
+    position:absolute;
+    top:20px;
+    left:20px;
+    font-size:28px;
+    color:white;
+    font-weight:bold;
+    z-index:10;
+  }
+  #k{
+    position:absolute;
+    top:20px;
+    left:140px;
+    width:60px;
+    font-size:20px;
+    z-index:10;
+  }
+  #d{
+    height:60px;
+    width:110px;
+    background-color:pink;
+    text-align:center;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    border-radius:40px;
+    position:absolute;
+    top:380px;
+    left:30px;
+    padding:0;
+    margin:0;
+    z-index:5;
+    transition: top 0.25s ease;
+  }
+  #d1{
+    height:40px;
+    width:40px;
+    background-color:yellow;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    animation: spin 1s linear infinite;
+    position:absolute;
+    top:50px;
+    left:8px;
+    border-radius:50px;
+  }
+  #d2{
+    height:40px;
+    width:40px;
+    background-color:yellow;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    animation: spin 1s linear infinite;
+    position:absolute;
+    top:50px;
+    left:66px;
+    border-radius:50px;
+  }
+  #dw{
+    height:30px;
+    width:40px;
+    background-color:rgb(0,0,255);
+  }
+  #dr{
+    height:100px;
+    width:860px;
+    background-color:black;
+    position:absolute;
+    top:450px;
+    left:20px;
+    z-index:-1;
+    animation: spi1 3s linear infinite;
+  }
+  .rd{
+    height:20px;
+    width:80px;
+    background-color:white;
+    position:absolute;
+    top:40px;
+  }
+  #dr1{left:30px;}
+  #dr2{left:170px;}
+  #dr3{left:310px;}
+  #dr4{left:450px;}
+  #dr5{left:590px;}
+  #dr6{left:730px;}
+
+  @keyframes spin {
+    from {transform: rotate(0deg);}
+    to {transform: rotate(360deg);}
+  }
+  @keyframes spi1 {
+    from {background-position-x:0;}
+    to {background-position-x:-140px;}
+  }
+
+  .bn{
+    height:50px;
+    width:100px;
+    border-radius:40px;
+    position:absolute;
+    top:600px;
+    border:none;
+    font-size:16px;
+    font-weight:bold;
+    cursor:pointer;
+  }
+  #bt1{
+    left:30px;
+    background:#22c55e;
+    color:white;
+  }
+  #bt2{
+    left:150px;
+    background:#ef4444;
+    color:white;
+  }
+
+  .obstacle{
+    height:100px;
+    width:40px;
+    background-color:#7a4a25;
+    position:absolute;
+    top:380px;
+    border-radius:6px;
+    z-index:4;
+  }
+
+  #gameOverScreen{
+    display:none;
+    position:absolute;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    background:rgba(0,0,0,0.75);
+    z-index:50;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    color:white;
+  }
+  #gameOverScreen h1{
+    font-size:48px;
+    margin-bottom:10px;
+    color:#ef4444;
+  }
+  #gameOverScreen p{
+    font-size:24px;
+    margin-bottom:20px;
+  }
+  #restartBtn{
+    padding:12px 30px;
+    font-size:20px;
+    border-radius:30px;
+    border:none;
+    background:#22c55e;
+    color:white;
+    cursor:pointer;
+    font-weight:bold;
+  }
+</style>
+</head>
+<body>
+
+<div id="game">
+  <div id="score">Score: <span id="k">0</span></div>
+
+  <div id="d">
+    <div id="dw"></div>
+    <div id="d1" class="nd">Hack</div>
+    <div id="d2" class="nd">Hack</div>
+  </div>
+
+  <div id="dr">
+    <div id="dr1" class="rd"></div>
+    <div id="dr2" class="rd"></div>
+    <div id="dr3" class="rd"></div>
+    <div id="dr4" class="rd"></div>
+    <div id="dr5" class="rd"></div>
+    <div id="dr6" class="rd"></div>
+  </div>
+
+  <!-- obstacles, JS-driven positions -->
+  <div id="db1" class="obstacle"></div>
+  <div id="db2" class="obstacle"></div>
+  <div id="db3" class="obstacle"></div>
+
+  <button id="bt1" class="bn" onclick="f1()">Up!</button>
+  <button id="bt2" class="bn" onclick="f2()">Down!</button>
+
+  <div id="gameOverScreen">
+    <h1>GAME OVER</h1>
+    <p id="finalScore">Score: 0</p>
+    <button id="restartBtn" onclick="restartGame()">Restart</button>
+  </div>
+</div>
+
+<script>
+let m = 0;
+let isJumping = false;
+let gameOver = false;
+let jumpTimeout = null;
+
+const car = document.getElementById("d");
+const gameArea = document.getElementById("game");
+const scoreEl = document.getElementById("k");
+const finalScoreEl = document.getElementById("finalScore");
+const gameOverScreen = document.getElementById("gameOverScreen");
+
+const obstacles = [
+  { el: document.getElementById("db1"), duration: 2000, startRight: -100 },
+  { el: document.getElementById("db2"), duration: 2800, startRight: -400 },
+  { el: document.getElementById("db3"), duration: 3500, startRight: -700 }
+];
+
+let obstacleState = obstacles.map(o => ({ ...o, right: o.startRight, active: false }));
+
+function f1(){
+  if(gameOver) return;
+  if(isJumping) return;
+  isJumping = true;
+  car.style.top = "230px";
+  clearTimeout(jumpTimeout);
+  jumpTimeout = setTimeout(function(){
+    car.style.top = "380px";
+    isJumping = false;
+  }, 700);
+}
+
+function f2(){
+  if(gameOver) return;
+  car.style.top = "380px";
+  clearTimeout(jumpTimeout);
+  isJumping = false;
+}
+
+document.addEventListener("keydown", function(e){
+  if(e.code === "Space" || e.code === "ArrowUp"){
+    e.preventDefault();
+    f1();
+  } else if(e.code === "ArrowDown"){
+    e.preventDefault();
+    f2();
+  }
+});
+
+let lastTime = null;
+let speedMultiplier = 1;
+
+function gameLoop(timestamp){
+  if(gameOver) return;
+  if(!lastTime) lastTime = timestamp;
+  const delta = timestamp - lastTime;
+  lastTime = timestamp;
+
+  const gameWidth = gameArea.offsetWidth;
+
+  obstacleState.forEach(o => {
+    const pixelsPerMs = (gameWidth + 200) / (o.duration / speedMultiplier);
+    o.right += pixelsPerMs * delta;
+
+    if(o.right > gameWidth + 100){
+      o.right = -100 - Math.random() * 300;
+    }
+
+    o.el.style.right = o.right + "px";
+  });
+
+  checkCollisions();
+
+  m += delta * 0.01;
+  scoreEl.textContent = Math.floor(m);
+
+  speedMultiplier = 1 + Math.floor(m / 200) * 0.15;
+
+  requestAnimationFrame(gameLoop);
+}
+
+function getRect(el){
+  return el.getBoundingClientRect();
+}
+
+function checkCollisions(){
+  const carRect = getRect(car);
+  const carBox = {
+    left: carRect.left + 15,
+    right: carRect.right - 15,
+    top: carRect.top + 10,
+    bottom: carRect.bottom - 5
+  };
+
+  for(const o of obstacleState){
+    const r = getRect(o.el);
+    const obBox = {
+      left: r.left,
+      right: r.right,
+      top: r.top,
+      bottom: r.bottom
+    };
+
+    const overlapX = carBox.left < obBox.right && carBox.right > obBox.left;
+    const overlapY = carBox.top < obBox.bottom && carBox.bottom > obBox.top;
+
+    if(overlapX && overlapY){
+      triggerGameOver();
+      return;
+    }
+  }
+}
+
+function triggerGameOver(){
+  gameOver = true;
+  finalScoreEl.textContent = "Score: " + Math.floor(m);
+  gameOverScreen.style.display = "flex";
+}
+
+function restartGame(){
+  gameOver = false;
+  m = 0;
+  speedMultiplier = 1;
+  lastTime = null;
+  scoreEl.textContent = "0";
+  car.style.top = "380px";
+  isJumping = false;
+  gameOverScreen.style.display = "none";
+
+  obstacleState.forEach((o, i) => {
+    o.right = o.startRight - i * 150;
+  });
+
+  requestAnimationFrame(gameLoop);
+}
+
+requestAnimationFrame(gameLoop);
+</script>
+
+</body>
